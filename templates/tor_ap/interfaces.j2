@@ -1,0 +1,30 @@
+auto lo
+
+iface lo inet loopback
+#iface {{ lan_iface }} inet dhcp
+
+#allow-hotplug {{ ap_iface }}
+#iface {{ ap_iface }} inet manual
+#wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf
+#iface default inet dhcp
+
+#iface {{ lan_iface }} inet dhcp
+
+#mine
+auto {{ lan_iface }}
+iface {{ lan_iface }} inet static
+    address 10.37.0.2
+    netmask 255.255.255.0
+    gateway 10.37.0.1
+
+allow-hotplug {{ ap_iface }}
+iface {{ ap_iface }} inet static
+    address 192.168.10.1
+    netmask 255.255.255.0
+
+allow-hotplug {{ inet_iface }}
+iface {{ inet_iface }} inet static
+    address 192.168.8.10
+    netmask 255.255.255.0
+    gateway 192.168.8.1
+    up iptables-restore < /etc/iptables.ipv4.prerouting.tor.j2

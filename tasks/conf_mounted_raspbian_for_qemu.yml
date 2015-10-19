@@ -1,0 +1,22 @@
+---
+
+## ld.so
+## FIXME: remove when qemu not needed anymore?
+- name: ensure
+  lineinfile:
+    src={{ raspbian_mount_rootfs_dir }}/etc/ld.so.preload
+    line="#/usr/lib/arm-linux-gnueabihf/libcofi_rpi.so"
+    regexp="/usr/lib/arm-linux-gnueabihf/libcofi_rpi.so"
+    state=present
+
+## FIXME: remove when qemu not needed anymore?
+- name: ensure qemu udev rules file is copied (optional)
+  file:
+    src=etc/udev/rules.d/90-qemu.rules
+    dest={{ raspbian_mount_rootfs_dir }}/etc/udev/rules.d/90-qemu.rules
+
+## FIXME: remove when qemu not needed anymore, only for chroot?
+- name: ensure qemu-arm-static is copied
+  file:
+    src=/usr/bin/qemu-arm-static
+    dest={{ raspbian_mount_rootfs_dir }}/usr/bin/qemu-arm-static

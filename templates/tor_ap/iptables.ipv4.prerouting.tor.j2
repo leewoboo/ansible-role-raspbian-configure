@@ -1,0 +1,8 @@
+*nat
+:PREROUTING ACCEPT [3:248]
+:INPUT ACCEPT [3:248]
+:OUTPUT ACCEPT [54:4112]
+:POSTROUTING ACCEPT [1:84]
+-A PREROUTING -i {{ ap_iface }} -p udp --dport 53
+-A PREROUTING -i {{ ap_iface }} -p tcp --syn -j REDIRECT --to-ports 9040
+COMMIT

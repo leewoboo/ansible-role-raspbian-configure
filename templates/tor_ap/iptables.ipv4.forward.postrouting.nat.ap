@@ -1,0 +1,13 @@
+#https://coderwall.com/p/m3excg/a-tor-proxy-in-a-raspberry-pi
+iptables -t nat -A POSTROUTING -o {{ inet_iface }} -j MASQUERADE
+iptables -A FORWARD -i {{ inet_iface }} -o {{ ap_iface }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i {{ inet_iface }} -o {{ ap_iface }} -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# sudo iptables -A INPUT -s 192.168.0.0/24 -i eth0 -j DROP
+# sudo iptables -A INPUT -s 10.0.0.0/8 -i eth0 -j DROP
+# sudo iptables -A INPUT -s 172.16.0.0/12 -i eth0 -j DROP
+# sudo iptables -A INPUT -s 224.0.0.0/4 -i eth0 -j DROP
+# sudo iptables -A INPUT -s 240.0.0.0/5 -i eth0 -j DROP
+# sudo iptables -A INPUT -s 127.0.0.0/8 -i eth0 -j DROP
+# sudo iptables -A INPUT -i eth0 -p tcp -m tcp --dport 22 -j DROP
+# sudo iptables -A INPUT -i eth0 -p icmp -m icmp --icmp-type 8 -j DROP

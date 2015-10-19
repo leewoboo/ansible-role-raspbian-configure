@@ -1,0 +1,6 @@
+#!/bin/sh
+iptables-save -c > /etc/iptables.ipv4.nat
+if [ -f /etc/iptables.downrules ]; then
+   iptables-restore < /etc/iptables.downrules
+fi
+exit 0

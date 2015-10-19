@@ -1,0 +1,81 @@
+---
+#- name: ensure raspbian qemu emulation is possible
+#  shell: qemu-system-arm -cpu ?|grep arm1176
+#  ## FIXME: how to notifiy user whether qemu emulation is possible
+#  #register:
+#  tags:
+#    - setupqemuraspbian
+
+# TODO: configure sources list with wheezy-backports
+
+
+- name: ensure wheezy-backports repository is present
+  apt_repository: >
+      repo="{{ item }}"
+      state=present
+      update_cache=yes
+  with_items:
+      - deb http://ftp.de.debian.org/debian wheezy-backports main contrib
+  sudo: true
+  tags:
+    - qemu
+  delegate_to: localhost
+
+- name: ensure qemu-system-arm from wheezy-backports
+  apt:
+    pkg={{ item }}
+    state=latest
+    install_recommends=no
+    #default_release=wheezy-backports
+  with_items:
+    #TODO: version for wheeze backports
+    - qemu-system-arm=2.1+dfsg-9~bpo70+1
+  sudo: true
+  tags:
+    - qemu
+  delegate_to: localhost
+
+- name: ensure required packages are present
+  apt:
+    pkg={{ item }}
+    state=latest
+    install_recommends=no
+  with_items:
+    #TODO: version for wheeze backports
+    #- qemu-system-arm
+    - binfmt-support
+  sudo: true
+  tags:
+    - qemu
+  delegate_to: localhost
+
+# TODO:
+# alternatively, download and install qemu from source
+# http://xecdesign.com/compiling-qemu/
+# /configure --target-list="arm-softmmu arm-linux-user" --enable-sdl --prefix=/home/user/_share
+
+#qemu is an ARM emulator, and qemu-user-static and binfmt-support allows us to run ARM executables without emulating the ARM kernel. (How cool is that!?!)
+
+
+- name: ensure kernel-qemu is downloaded
+  get_url:
+    url={{ kernel-qemu_url }}
+    dest={{ raspbian_dir }}/kernel-qemu
+    sha256sum={{ kernel-qemu_sha256sum }}
+  tags:
+    - setupqemuraspbian
+  tags:
+    - qemu
+  delegate_to: localhost
+
+## binfmt
+#modprobe binfmt_misc
+#mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc
+## FIXME: needed to emulate arm on a 32 bits i686 arch host
+# - name: ensure
+#   shell: echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/local/bin/qemu-arm:' > /proc/sys/fs/binfmt_misc/register
+- name: ensure binfmt support is present
+  command: update-binfmts --enable qemu-arm
+  tags:
+    - qemu
+  delegate_to: localhost

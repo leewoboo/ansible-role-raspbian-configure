@@ -1,0 +1,218 @@
+## configure interfaces
+#######################
+
+- name: ensure network is configured
+  template:
+    src={{ mode }}interfaces.j2
+    dest={{ sd_mount_rootfs_dir }}/etc/network/interfaces
+
+
+## configure dhcp server
+#########################
+
+- name: ensure /etc/dhcp/dhcpd.conf is configured
+  template:
+    src={{ mode }}dhcpd.conf.j2
+    dest={{ sd_mount_rootfs_dir }}/etc/dhcp/dhcpd.conf
+
+# FIXME: change to regex
+- name: ensure /etc/default/isc-dhcp-server is configured
+  template:
+    src={{ mode }}isc-dhcp-server.j2
+    dest={{ sd_mount_rootfs_dir }}/etc/default/isc-dhcp-server
+  notify: [ 'Restart dhcp' ]
+
+- name: register hostapd
+  service: name=isc-dhcp-server enabled=yes
+  #sudo update-rc.d isc-dhcp-server enable
+
+
+## configure hostapd
+#####################
+- name: stat hostapd
+  stat: path=/usr/sbin/hostapd
+  register: hostapd_stat
+
+- name: Move hostapd
+  command: mv /usr/sbin/hostapd /usr/sbin/hostapd.ORIG
+    creates=/usr/sbin/hostapd.ORIG
+    removes=/usr/sbin/hostapd
+  when: hostapd_stat.stat.exists and hostapd_stat.checksum != 55f0d1415b7da8c976dc79db8461ee9550317b7a
+
+- name: ensure hostapd zip downloaded
+  get_url:
+    url={{ hostapd_zip_url }}
+    dest={{ hostapd_download_path }}
+    sha256sum=3d6fdee2a7b81c03951823d6c0669b8d4bc5b2220d278100726c10987f2b3e40
+  delegate_to: localhost
+  when: hostapd_stat.checksum != 55f0d1415b7da8c976dc79db8461ee9550317b7a
+
+# this would be different when mounted sd
+# unless ssh localhost
+# it also extract directly into the remote
+# if it's already in the remote, we don't need to overwrite it
+- name: extract hostapd zip
+  unarchive:
+    src={{ hostapd_download_path }}
+    dest=/usr/sbin/hostapd
+    copy=no
+    mode=0755
+    owner=root
+    group=root
+  when: hostapd_stat.checksum != 55f0d1415b7da8c976dc79db8461ee9550317b7a
+
+- name: ensure /etc/hostapd/hostapd.conf is configured
+  template:
+    src={{ mode }}hostapd.conf.j2
+    dest={{ sd_mount_rootfs_dir }}/etc/hostapd/hostapd.conf
+
+# FIXME: change to regex
+- name: ensure /etc/default/hostapd is configured
+  template:
+    src={{ mode }}hostapd.j2
+    dest={{ sd_mount_rootfs_dir }}/etc/default/hostapd
+  notify: [ 'Restart hostapd' ]
+
+- name: register hostapd
+  service: name=hostapd enabled=yes
+
+## configure sysctl
+#####################
+
+# - name: ensure /etc/sysctl.conf is configured
+#   copy:
+#     src={{ mode }}sysctl.conf
+#     dest={{ sd_mount_rootfs_dir }}/etc/sysctl.conf
+
+- name: ensure sysctl is configured
+  lineinfile:
+    dest={{ sd_mount_rootfs_dir }}/etc/sysctl.conf
+    line="net.ipv4.ip_forward=1"
+    regexp="net.ipv4.ip_forward"
+    state=present
+  #echo 1 > /proc/sys/net/ipv4/ip_forward
+
+## rm wpa_supplicant
+#####################
+
+# this might no be needed
+- name: stat /usr/share/dbus-1/system-services/fi.epitest.hostap.WPASupplicant.service
+  stat: path=/usr/share/dbus-1/system-services/fi.epitest.hostap.WPASupplicant.service
+  register: wpa_stat
+
+- name: Move fi.epitest.hostap.WPASupplicant.service to /root
+  command: mv /usr/share/dbus-1/system-services/fi.epitest.hostap.WPASupplicant.service /root
+    removes=/usr/share/dbus-1/system-services/fi.epitest.hostap.WPASupplicant.service
+    creates=/root/fi.epitest.hostap.WPASupplicant.service
+  when: wpa_stat.stat.exists
+
+## configure iptables
+########################
+
+- name: ensure firewall is copied
+  copy:
+    src={{ mode }}iptables.ipv4.tor.nat
+    dest={{ sd_mount_rootfs_dir }}/etc/iptables.ipv4.tor.nat
+    owner=root
+    group=root
+    mode=755
+
+#- name: ensure firewall pre-up scripts are copied
+#  copy:
+#    src={{ mode }}iptablesload
+#    dest={{ sd_mount_rootfs_dir }}/etc/network/if-pre-up.d/iptablesload
+#    owner=root
+#    group=root
+#    mode=755
+
+#- name: ensure firewall post-down scripts are copied
+#  copy:
+#    src={{ mode }}iptablessave
+#    dest={{ sd_mount_rootfs_dir }}/etc/network/if-post-down.d/iptablessave
+#    owner=root
+#    group=root
+#    mode=755
+
+# - name: Configure iptables-persistent
+#     template: src={{ mode }}iptables/${item} dest=/etc/${item} mode=0644
+#     with_items:
+#     - init.d/iptables-persistent
+#     - default/iptables-persistent.conf
+#     - iptables/rules
+#     - iptables/ipv6_rules
+#     sudo: true
+
+# - name: Register iptables-persistent init.d script
+#     command: update-rc.d iptables-persistent defaults
+#     sudo: true
+
+
+# - name: ensure wpa_supplicant.conf is present
+#   template:
+#     src={{ mode }}wpa_supplicant.conf
+#     dest={{ sd_mount_rootfs_dir }}/etc/wpa_supplicant/wpa_supplicant.conf
+
+
+
+## change mac
+##############
+
+#- name: ensure macchanger udev rules are present
+#  copy:
+#    src={{ mode }}20-macchanger.rules
+#    dest={{ sd_mount_rootfs_dir }}/etc/udev/rules.d/20-macchanger.rules
+#    owner=root
+#    group=root
+#    mode=644
+
+# - name: ensure macchanger if-pre-up.d is present
+#   copy:
+#     src={{ mode }}macchanger
+#     dest={{ sd_mount_rootfs_dir }}/etc/network/if-pre-up.d/macchanger
+#     owner=root
+#     group=root
+#     mode=755
+
+#
+## change root password, ssh access?
+## change user, password and create cert
+
+
+## configure tor
+#################
+
+
+- name: ensure /etc/tor/torrc is configured
+  template:
+    src={{ mode }}torrc.j2
+    dest={{ sd_mount_rootfs_dir }}/etc/tor/torrc
+
+# FIXME: change to regex
+# - name: ensure /etc/default/tor is configured
+#   template:
+#     src={{ mode }}tor.j2
+#     dest={{ sd_mount_rootfs_dir }}/etc/default/tor
+#   notify: [ 'Restart tor' ]
+
+- name: ensure notices.log exists
+  file:
+    path=/var/log/tor/notices.log
+    owner=debian-tor
+    group=root
+    mode=0644
+    state=touch
+  notify: ['Restart to']
+
+- name: register tor
+  service: name=tor enabled=yes
+
+##Spawn a getty on Raspberry Pi serial line
+#T0:23:respawn:/sbin/getty -L ttyAMA0 115200 vt100
+
+#https://www.raspberrypi.org/forums/viewtopic.php?p=195941
+#cat /boot/cmdline.txt
+#dwc_otg.fiq_fix_enable=0 sdhci-bcm2708.sync_after_dma=0 dwc_otg.lpm_enable=0 console=ttyAMA0,115200 kgdboc=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline rootwait
+#original
+#dwc_otg.lpm_enable=0 console=ttyAMA0,115200 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline rootwait
+#smsc95xx.turbo_mode=N
+#dwc_otg.speed=1

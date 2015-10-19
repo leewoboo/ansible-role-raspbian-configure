@@ -1,0 +1,51 @@
+* Work in progress... Not ready to use!!*
+
+ansible-role-raspbian-configure
+========================================
+
+This role is intended to obtain and configure a raspbian image
+in different ways emulating it in qemu.
+Work not finished.
+This role has only been tested in Debian.
+
+Requirements
+------------
+
+This role requires Ansible 1.6 or higher.
+
+Role Variables
+--------------
+
+See defaults/main.yml
+
+Dependencies
+------------
+
+Example Playbook
+-----------------
+
+For convenience, there's an ansible project (ansible-prj-raspbian-configure) configured to use this role
+
+    - hosts: raspberry
+      roles:
+           - { role: ansibe-role-raspbian-configure,                         
+               dest_sd: false,                                             
+               dest_img: false,                                     
+               lan_iface: eth0,                 
+               inet_iface: eth1,                
+               ap_iface: wlan0,
+               sd_mount_rootfs_dir : '',                
+               get_raspbian: false,
+               raspbian_image: 2015-02-16-wheezy-raspbian-wificlient-2015-04-28.img
+             }
+
+License
+-------
+
+GPLv3
+
+Author Information
+------------------
+
+Lee Woboo
+

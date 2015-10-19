@@ -1,0 +1,31 @@
+--
+
+- name: ensure mounting points exists
+- file:
+    path={{ item }}
+    state=directory
+    owner={{ host_user }}
+  with_items:
+    - {{ sd_mount_rootfs_dir }}
+    - {{ sd_mount_config_dir }}
+  tags:
+    - mountsd
+  delegate_to: localhost
+
+- name: ensure sd card rootfs is mounted
+  mount:
+    name={{ sd_mount_rootfs_dir }}
+    src={{ sd_rootfs }}
+    fstype=ext4
+    state=present
+  tags:
+    - mountsd
+
+- name: ensure sd card config is mounted
+  mount:
+    name={{ sd_mount_config_dir }}
+    src={{ sd_conf }}
+    fstype=vfat
+    state=present
+  tags:
+    - mountsd

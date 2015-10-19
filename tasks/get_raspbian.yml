@@ -1,0 +1,30 @@
+---
+
+- name: ensure raspbian image is downloaded
+  get_url:
+    url={{ raspbian_zip_url }}
+    dest={{ raspbian_dir }}/{{ raspbian_zip_url }}
+    sha256sum={{ raspbian_zip_sha256sum }}
+  when: generic_image is defined and generic_image
+  tags:
+    - setupraspbian
+
+- name: gather state of raspbian image
+  stat: path={{ raspbian_dir }}/{{ raspbian_image }}
+  register: raspbian_image_st
+  when: generic_image is defined and generic_image
+  tags:
+    - setupraspbian
+
+- name: ensure raspbian zip extracted
+  command: unzip {{ raspbian_dir }}/{{ raspbian_zip }}
+  when: raspbian_image_st.stat.isfile is not defined and generic_image is defined and generic_image
+  tags:
+    - setupraspbian
+
+- name: ensure raspbian zip extracted
+  command: unzip {{ raspbian_dir }}/{{ raspbian_zip }}
+  when: raspbian_image_st.stat.isfile is not defined and generic_image is defined and generic_image
+  tags:
+    - setupraspbian
+

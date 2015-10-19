@@ -1,0 +1,20 @@
+---
+
+- name: ensure tlsdate repository is present
+  apt_repository: >
+      repo="{{ item }}"
+      state=present
+      update_cache=yes
+  with_items:
+      - deb http://ftp.de.debian.org/debian wheezy-backports main contrib
+
+- name: ensure debian-keyring and tlsdate keyring packages are installed
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+    install_recommends: no
+  with_items: ["debian-keyring", "tlsdate"]
+
+- name: ensure tlsdate is running
+  sudo: true
+  service: name=tlsdate state=running

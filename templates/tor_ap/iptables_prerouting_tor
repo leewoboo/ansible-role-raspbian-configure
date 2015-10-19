@@ -1,0 +1,13 @@
+#https://coderwall.com/p/m3excg/a-tor-proxy-in-a-raspberry-pi
+#https://learn.adafruit.com/onion-pi?view=all
+#https://www.tobias-bauer.de/raspianpi-tor-proxy.html
+
+iptables -t nat -A PREROUTING -i wlan0 -p tcp --dport 22 -j REDIRECT --to-ports 22
+
+#To route all DNS (UDP port 53) from interface wlan0 to internal port 53 (DNSPort in our torrc):
+
+iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j REDIRECT --to-ports 53
+
+#To route all TCP traffic from interface wlan0 to port 9040 (TransPort in our torrc):
+
+iptables -t nat -A PREROUTING -i wlan0 -p tcp --syn -j REDIRECT --to-ports 9040

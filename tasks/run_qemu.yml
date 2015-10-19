@@ -1,0 +1,11 @@
+---
+
+## Starting qemu in user mode linux, when asking DHCP, will get an ip from xx
+## with the port forwarding argument, it can be accessed by ssh -p 2222 pi@127.0.0.1
+## FIXME: how to check is not already started
+- name: start qemu with rasbian and user mode networking
+  #command: qemu-system-arm -kernel kernel-qemu -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1" -hda {{ raspbian_image }} -net nic -net user,hostfwd=tcp::2222-:22
+  command: qemu-system-arm -M versatilepb -cpu arm1136-r2 -hda {{ raspbian_path }} -kernel kernel-qemu -m 256 -append "root=/dev/sda2" -net tap,ifname=tap0,script=no -net nic
+  tags:
+    - runqemurasbian
+

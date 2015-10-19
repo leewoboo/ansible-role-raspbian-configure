@@ -1,0 +1,5 @@
+--
+
+- name: ensure image is copied to the sd card
+  command: dd bs=4M if={{ raspbian_path }} of={{ sd_dev }}
+  when: cpimg2sd

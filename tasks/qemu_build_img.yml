@@ -1,0 +1,65 @@
+echo "EXTRA_OPTS=\"-L/usr/lib/arm-linux-gnueabihf\"" > /etc/qemu-binfmt.conf
+
+
+
+qemu-img create -f raw lepidopter-20150409.img 3900000000
+parted -s lepidopter-20150409.img mklabel msdos
+parted -s lepidopter-20150409.img mkpart primary fat16 0 61
+parted -s lepidopter-20150409.img mkpart primary 61 100%
+parted -s lepidopter-20150409.img set 1 boot on
+install-mbr lepidopter-20150409.img
+kpartx -avs lepidopter-20150409.img
+mkfs -t ext4 /dev/mapper/loop0p2
+mkdir /tmp/tmp7CL6xD
+mount /dev/mapper/loop0p2 /tmp/tmp7CL6xD
+mkfs -t vfat /dev/mapper/loop0p1
+mount /dev/mapper/loop0p1 /tmp/tmp7CL6xD/boot/
+http_proxy=http://127.0.0.1:3142 debootstrap --arch=armel --include=sudo --foreign jessie /tmp/tmp7CL6xD http://ftp.de.debian.org/debian/
+
+http_proxy=http://127.0.0.1:3142 debootstrap --arch=armel --include=netbase,ntp,iproute2,less,openssh-server,screen,git-core,binutils,ca-certificates,wget,curl,kmod,curl,python,python-dev,python-setuptools,build-essential,libdumbnet1,python-dumbnet,python-libpcap,tor,tor-geoipdb,libgeoip-dev,libpcap0.8-dev,libssl-dev,libffi-dev,libdumbnet-dev,tcpdump,python-pip,sudo --foreign jessie /tmp/tmp7CL6xD http://ftp.de.debian.org/debian/
+
+cp /usr/bin/qemu-arm-static /tmp/tmp7CL6xD/usr/bin/
+
+modprobe binfmt_misc
+mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc
+#mount -o bind /proc /tmp/tmp7CL6xD/proc
+
+echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm-static:' > /proc/sys/fs/binfmt_misc/register
+
+#binfmt-support
+#update-binfmts --display qemu-arm
+#--enable
+
+http_proxy=http://127.0.0.1:3142 chroot /tmp/tmp7CL6xD /debootstrap/debootstrap --second-stage --verbose
+
+
+/
+
+umount /tmp/tmp7CL6xD/boot/
+umount /tmp/tmp7CL6xD
+partx -d lepidopter-20150409.img
+
+
+
+
+blkid -c /dev/null -o value -s UUID /dev/mapper/loop0p2
+blkid -c /dev/null -o value -s UUID /dev/mapper/loop0p1
+chroot /tmp/tmp7CL6xD apt-get clean
+chroot /tmp/tmp7CL6xD passwd -d root
+chroot /tmp/tmp7CL6xD adduser --gecos lepidopter --disabled-password lepidopter
+chroot /tmp/tmp7CL6xD adduser lepidopter sudo
+chroot /tmp/tmp7CL6xD usermod -p ..s2nguPQOFmc lepidopter
+#Removing udev persistent cd and net rules
+#not removing non-existent /tmp/tmp7CL6xD/etc/udev/rules.d/70-persistent-cd.rules
+#Setting up networking
+#configure apt /tmp/tmp7CL6xD/etc/apt/sources.list.d/base.list
+#Setting apt mirror to http://ftp.no.debian.org/debian/
+chroot /tmp/tmp7CL6xD apt-get -qq
+chroot /tmp/tmp7CL6xD apt-get -qq update
+
+/home/user/_my/code/lepidopter/customize /tmp/tmp7CL6xD lepidopter-20150410.img
+
+#No kernel found. Cannot find match: vmlinuz-.*. Skipping install of extlinux.
+dd if=/dev/zero of=/tmp/tmp7CL6xD/ZEROS bs=1M
+rm -f /tmp/tmp7CL6xD/ZEROS
+

@@ -1,0 +1,36 @@
+---
+## remove unuseful packages (needs ssh)
+## install required packages (needs ssh)
+## configure network (don't restart or qemu user mode networking won't work anymore
+## configure macchanger
+#
+## change root password, ssh access?
+## change user, password and create certificate?:t
+#
+
+
+# - include: mount_img.yml
+#   when: dest_img
+
+# - include: sd.yml
+#   when: dest_sd
+#   sudo: true
+
+# - include: ssh.yml
+#   when: dest_ssh
+
+- include: remove-upgrade.yml
+  sudo: true
+  tags: upgrade
+
+- include: mount_img.yml
+  sudo: true
+  tags: mount_img
+  when: mount_img is defined and mount_img
+
+- include: run_qemu.yml
+  tags: run_qemu
+  when: run_qemu is defined and run_qemu
+
+
+#- include: tor_ap.yml

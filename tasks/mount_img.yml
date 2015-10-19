@@ -1,0 +1,51 @@
+---
+
+- name: ensure mounting points exists
+  file:
+    path="{{ item }}"
+    state=directory
+    owner="{{ host_user }}"
+  with_items:
+    - {{ raspbian_mount_rootfs_dir }}
+    - {{ raspbian_mount_config_dir }}
+  tags:
+    - mountimg
+  delegate_to: localhost
+
+
+#FIXME: to automatically get img offsets
+#file foo.img
+#8192*512 = 4194304
+#122880 * 512 = 62914560
+# the offset can also be found with
+#fdisk -lu foo.img
+
+- name: get loop devices with kpartx
+  command: kpartx -as {{ raspbian_path }}
+  register: hello
+
+- debug: msg="{{ hello.stdout }}"
+
+- debug: msg="{{ hello.stderr }}"
+
+
+# - name: ensure img rootfs is mounted
+#   mount:
+#     name={{ raspbian_mount_rootfs_dir }}
+#     src={{ raspbian_path }}
+#     fstype=ext4
+#     state=present
+#     opts=loop,offset=rasbian_offset_rootfs
+#   tags:
+#     - mountimg
+
+# - name: ensure img config is mounted
+#   mount:
+#     name={{ raspbian_mount_config_dir }}
+#     src={{ raspbian_path }}
+#     fstype=vfat
+#     state=present
+#     opts=loop,offset=rasbian_offset_rootfs
+#   tags:
+#     - mountimg
+

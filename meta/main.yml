@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: Lee Woboo
+  description: obtain and configure a raspbian image
+  in different ways emulating it in qemu
+  license: GPLv3
+  min_ansible_version: 1.6
+  platforms:
+   - name: Debian
+     versions:
+      - wheezy
+  categories:
+   - system
+   - networking
+dependencies: []

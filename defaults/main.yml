@@ -1,0 +1,67 @@
+---
+cpimg2sd: false
+dest_sd: true
+dest_img: false
+dest_ssh: false
+
+kernel-qemu_url: http://xecdesign.com/downloads/linux-qemu/kernel-qemu
+kernel-qemu_sha256sum:
+#raspbian_zip_sha256sum: 9d0afbf932ec22e3c29d793693f58b0406bcab86
+raspbian_zip_sha256sum: b71d7b61f44e9bd582df71c9be494c271c97650f
+#raspbian_zip_url: http://212.187.212.70/bt/4627bda58f99162374ecb442a24cf6d4db2f1e09/data/2014-06-20-wheezy-raspbian.zip
+raspbian_zip_url: "http://downloads.raspberrypi.org/raspbian/images/raspbian-2015-02-17/{{ raspbian_image }}"
+#raspbian_zip: 2014-01-07-wheezy-raspbian.zip
+raspbian_zip: 2015-02-16-raspbian-wheezy.zip
+generic_image: true
+get_raspbian: true
+
+host_user: user
+host_user_home: "/home/{{ user }}"
+
+#raspbian_dir: "{{ host_user_home }}/raspbian_imgs"
+raspbian_dir: "{{ host_user_home }}/_my/code/raspeberry-related/"
+#raspbian_image: 2014-01-07-wheezy-raspbian.img
+raspbian_image: 2014-01-07-wheezy-raspbian-wificlient-tor.img
+raspbian_path: "{{ raspbian_dir }}/{{ raspbian_image }}"
+raspbian_offset_conf: 4194304
+raspbian_offset_rootfs: 62914560
+raspbian_mount_rootfs_dir: /mnt/raspbianrootf
+raspbian_mount_config_dir: /mnt/raspbianconfig
+
+sd_dev: "/dev/sdc"
+sd_conf: "{{ sd_dev }}1"
+sd_rootfs: "{{ sd_dev }}2"
+sd_mount_rootfs_dir: /mnt/rootfs
+sd_mount_config_dir: /mnt/conf
+
+mode: tor_ap/
+
+eth0_address: 192.168.1.1
+eth0_netmask: 255.255.255.0
+
+lan_iface: eth0
+inet_iface: eth1
+ap_iface: wlan0
+
+lan_address: 10.37.0.2
+lan_netmask: 255.255.255.0
+
+inet_address: 192.168.8.10
+inet_netmask: 255.255.255.0
+
+ap_address: 192.168.10.1
+ap_netmask: 255.255.255.0
+ap_subnet: 192.168.10.0
+ap_router: "{{ ap_address }}"
+ap_broadcast: 192.168.10.255
+ap_dhcp_range: "192.168.10.10 192.168.10.20"
+
+router: 192.168.8.1
+
+ap_essid: wifi
+ap_passphrase: DontBreakTheNet
+
+hostapd_zip_url: http://adafruit-download.s3.amazonaws.com/adafruit_hostapd_14128.zip
+#hostapd_download_path: /home/pi
+hostapd_download_path: ./adafruit_hostapd.zip
+hostapd_path: /usr/sbin/hostapd
